@@ -42,6 +42,46 @@
      **/
     function match( obj, pattern ) {
 
+        // null
+        if ( obj === null && pattern === null ) { return true; }
+
+        // undefined
+        if (   obj === undefined
+            && pattern === undefined
+            && arguments.length >= 2 ) {
+
+            return true;
+
+        }
+
+        // Number & String objects, regexes & functions
+        if (
+               ( obj instanceof Number && pattern instanceof Number )
+            || ( obj instanceof String && pattern instanceof String )
+            || ( obj instanceof RegExp && pattern instanceof RegExp )
+            || ( obj instanceof Function && pattern instanceof Function )
+           ) {
+
+            return obj.toString() === pattern.toString();
+
+        }
+
+        // Numbers (primitive values)
+        if ( 0 + obj === obj && 0 + pattern === pattern ) {
+
+            return obj.toString() === pattern.toString();
+
+        }
+
+        // Strings (primitive values)
+        if ( '' + obj === obj && '' + obj === obj ) {
+
+            return obj === pattern;
+
+        }
+
+        // ("classic"-)Objects & Arrays -> TODO
+
         return false;
 
     }
