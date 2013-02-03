@@ -59,6 +59,68 @@ describe( 'ArrayDB objects', function() {
 
         });
 
+        it( 'should return an array', function() {
+
+            var a = new ArrayDB();
+
+            expect( a.query() ).to.be.a( 'array' );
+            expect( a.query([]) ).to.be.a( 'array' );
+            expect( a.query({}) ).to.be.a( 'array' );
+            expect( a.query(0) ).to.be.a( 'array' );
+            expect( a.query(NaN) ).to.be.a( 'array' );
+            expect( a.query(true) ).to.be.a( 'array' );
+
+        });
+
+        it( 'should works without Array.filter', function() {
+
+            var a = new ArrayDB( 1, 2, 3 ),
+
+                _filter = Array.filter;
+
+            Array.filter = null;
+
+            expect( a.query() ).to.deep.equal( [] );
+
+            Array.filter = _filter;
+
+        });
+
+        it( 'should be empty if the object is empty', function() {
+
+            var a = new ArrayDB(),
+                b = new ArrayDB([]),
+                c = new ArrayDB( 1, 2, 3 );
+
+            expect( a.query() ).to.deep.equal( [] );
+            expect( b.query() ).to.deep.equal( [] );
+            expect( c.query() ).to.deep.equal( [] );
+
+        });
+
+        it( 'should be empty if the query is empty', function() {
+
+            var a = new ArrayDB( 1, 2, 3 );
+
+            expect( a.query() ).to.deep.equal( [] );
+
+        });
+
+        it( 'should be empty if the query is not of '
+          + 'the same type of any of the DB elements', function() {
+
+            var a = new ArrayDB( 1, 2, 3 );
+
+            expect( a.query( function(){} ) ).to.deep.equal( [] );
+            expect( a.query( undefined ) ).to.deep.equal( [] );
+            expect( a.query( true ) ).to.deep.equal( [] );
+            expect( a.query( null ) ).to.deep.equal( [] );
+            expect( a.query( /o/ ) ).to.deep.equal( [] );
+            expect( a.query( {} ) ).to.deep.equal( [] );
+            expect( a.query( [] ) ).to.deep.equal( [] );
+
+        });
+
     });
 
 });
