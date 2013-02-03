@@ -121,6 +121,44 @@ describe( 'ArrayDB objects', function() {
 
         });
 
+        it( 'should be empty if the `limit` is less than 1', function() {
+
+            var a = new ArrayDB( 1, 2, 3 );
+
+            expect( a.query( 2, 0 ) ).to.deep.equal( [] );
+
+        });
+
+        it( 'should be empty if the `offset` is equal or larger '
+          + 'than the array size', function() {
+
+            var a = new ArrayDB( 1, 2, 3 );
+
+            expect( a.query( 2, 10, 3 ) ).to.deep.equal( [] );
+            expect( a.query( 2, 10, 4 ) ).to.deep.equal( [] );
+
+        });
+
+        describe( 'with an array of numbers', function() {
+
+            it( 'should match only equal numbers', function() {
+
+                var a = new ArrayDB( 42, 1, 18, -42, 42 );
+
+                expect( a.query( 42 ) ).to.deep.equal([ 42, 42 ]);
+
+            });
+
+            it( 'should match NaN values with a NaN query', function() {
+
+                var a = new ArrayDB( 1, NaN, 2 );
+
+                expect( a.query( NaN ) ).to.deep.equal([ NaN ]);
+
+            });
+
+        });
+
     });
 
 });
