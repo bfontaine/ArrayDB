@@ -1,4 +1,4 @@
 ArrayDB
 =======
 
-Use your arrays are DBs, and make queries on them.
+Use your arrays as DB tables, and make queries on them.

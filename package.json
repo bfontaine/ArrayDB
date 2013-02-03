@@ -1,7 +1,7 @@
 {
   "name": "ArrayDB",
   "version": "0.0.0",
-  "description": "Use arrays as basic databases, to make queries on them",
+  "description": "Use arrays as basic DB tables, and make queries on them",
   "main": "src/arraydb.js",
   "directories": {
     "test": "test"
