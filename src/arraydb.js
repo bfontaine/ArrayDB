@@ -42,7 +42,7 @@
      **/
     function match( obj, pattern ) {
 
-        return true;
+        return false;
 
     }
 
@@ -58,9 +58,17 @@
 
         var i, _l, res;
 
-        if ( this.length === 0 ) { return []; }
+        if ( this.length === 0 || arguments.length === 0 ) {
+        
+            return [];
+        
+        }
 
-        if ( limit === undefined ) { limit = Infinity; }
+        if ( limit === undefined ) {
+            
+            limit = Infinity;
+        
+        }
 
         offset = offset || 0;
 
@@ -85,6 +93,8 @@
             }
 
         }
+
+        return res;
 
     }
 
