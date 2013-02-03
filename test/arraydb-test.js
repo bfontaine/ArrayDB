@@ -72,17 +72,17 @@ describe( 'ArrayDB objects', function() {
 
         });
 
-        it( 'should works without Array.filter', function() {
+        it( 'should works without Array#filter', function() {
 
             var a = new ArrayDB( 1, 2, 3 ),
 
-                _filter = Array.filter;
+                _filter = Array.prototype.filter;
 
-            Array.filter = null;
+            Array.prototype.filter = null;
 
-            expect( a.query() ).to.deep.equal( [] );
+            expect( a.query( 42 ) ).to.deep.equal( [] );
 
-            Array.filter = _filter;
+            Array.prototype.filter = _filter;
 
         });
 

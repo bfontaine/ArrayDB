@@ -72,7 +72,7 @@
 
         offset = offset || 0;
 
-        if ( typeof Array.filter === 'function' ) {
+        if ( typeof Array.prototype.filter === 'function' ) {
 
             return this.filter(function( e ) {
                 return match( e, q );
