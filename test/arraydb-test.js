@@ -229,16 +229,6 @@ describe( 'ArrayDB objects', function() {
                 expect( a.query( /foo+/ ).length ).to.equal( 1 );
 
             });
-
-            it( 'should match primitives '
-              + 'only with a primitive regex query', function() {
-
-                var a = new ArrayDB( new RegExp('f'), /f/ );
-
-                expect( a.query( /f/ ).length ).to.equal( 1 );
-                expect( a.query( new RegExp('f') ).length ).to.equal( 1 );
-
-            });
         
         });
 
