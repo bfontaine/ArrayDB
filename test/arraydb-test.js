@@ -153,7 +153,8 @@ describe( 'ArrayDB objects', function() {
 
                 var a = new ArrayDB( 1, NaN, 2 );
 
-                expect( a.query( NaN ) ).to.deep.equal([ NaN ]);
+                expect( a.query( NaN ).length ).to.equal( 1 );
+                expect( a.query( NaN ).toString() ).to.equal( 'NaN' );
 
             });
 
