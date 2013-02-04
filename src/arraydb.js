@@ -42,6 +42,8 @@
      **/
     function match( obj, pattern ) {
 
+        var i, _l;
+
         // null
         if ( obj === null && pattern === null ) { return true; }
 
@@ -75,7 +77,8 @@
         }
 
         // NaN
-        if ( isNaN( obj ) && isNaN( pattern ) ) {
+        if (   typeof obj === 'number' && isNaN( obj )
+            && typeof pattern === 'number' && isNaN( pattern ) ) {
 
             return true;
 
@@ -95,7 +98,21 @@
 
         }
 
-        // ("classic"-)Objects & Arrays -> TODO
+        if ( obj instanceof Array && pattern instanceof Array ) {
+
+            if ( obj.length !== pattern.length ) { return false; }
+
+            for ( i=0, _l=obj.length ; i<_l; i++ ) {
+
+                if ( !match( obj[ i ], pattern[ i ] ) ) { return false; }
+
+            }
+
+            return true;
+
+        }
+
+        // ("classic"-)Objects -> TODO
 
         return false;
 
