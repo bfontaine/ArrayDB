@@ -54,10 +54,11 @@
 
         }
 
-        // Number & String objects, regexes & functions
+        // Number, Boolean & String objects, regexes & functions
         if (
                ( obj instanceof Number && pattern instanceof Number )
             || ( obj instanceof String && pattern instanceof String )
+            || ( obj instanceof Boolean && pattern instanceof Boolean )
             || ( obj instanceof RegExp && pattern instanceof RegExp )
             || ( obj instanceof Function && pattern instanceof Function )
            ) {
@@ -81,7 +82,14 @@
         }
 
         // Strings (primitive values)
-        if ( '' + obj === obj && '' + obj === obj ) {
+        if ( '' + obj === obj && '' + pattern === pattern ) {
+
+            return obj === pattern;
+
+        }
+
+        // Booleans (primitive values)
+        if ( !!obj === obj && !!pattern === pattern ) {
 
             return obj === pattern;
 
