@@ -158,7 +158,8 @@ describe( 'ArrayDB objects', function() {
 
             });
 
-            it( 'should match Infinity values with an Infinity query', function(){
+            it( 'should match Infinity values '
+              + 'with an Infinity query', function(){
             
                 var a = new ArrayDB( Infinity, 1, -Infinity, 3 );
 
@@ -190,7 +191,8 @@ describe( 'ArrayDB objects', function() {
             
             });
 
-            it( 'should return nothing if the query is not a boolean', function() {
+            it( 'should return nothing '
+              + 'if the query is not a boolean', function() {
 
                 var a = new ArrayDB( true, false, true, true, false );
 
@@ -203,7 +205,8 @@ describe( 'ArrayDB objects', function() {
 
         describe( 'with an array of `undefined` values', function(){
         
-            it( 'should only match if the query is defined to `undefined`', function() {
+            it( 'should only match only '
+              +'if the query is defined to `undefined`', function() {
 
                 var a = new ArrayDB( undefined );
 
@@ -215,7 +218,31 @@ describe( 'ArrayDB objects', function() {
         
         });
 
-        describe( 'with an array of mixed values', function(){
+        describe( 'with an array of regexes', function() {
+        
+            it( 'should match only with exactly equal regexes', function() {
+
+                var a  = new ArrayDB( /foo+/, /barr?/ );
+
+                expect( a.query( /barr?/g ).length ).to.equal( 0 );
+                expect( a.query( /fooo*/ ).length ).to.equal( 0 );
+                expect( a.query( /foo+/ ).length ).to.equal( 1 );
+
+            });
+
+            it( 'should match primitives '
+              + 'only with a primitive regex query', function() {
+
+                var a = new ArrayDB( new RegExp('f'), /f/ );
+
+                expect( a.query( /f/ ).length ).to.equal( 1 );
+                expect( a.query( new RegExp('f') ).length ).to.equal( 1 );
+
+            });
+        
+        });
+
+        describe( 'with an array of mixed values', function() {
         
             it( 'should only match the same type of the query', function() {
 
