@@ -201,6 +201,20 @@ describe( 'ArrayDB objects', function() {
         
         });
 
+        describe( 'with an array of `undefined` values', function(){
+        
+            it( 'should only match if the query is defined to `undefined`', function() {
+
+                var a = new ArrayDB( undefined );
+
+                expect( a.length ).to.equal( 1 );
+                expect( a.query( undefined ).length ).to.equal( 1 );
+                expect( a.query().length ).to.equal( 0 );
+
+            });
+        
+        });
+
         describe( 'with an array of mixed values', function(){
         
             it( 'should only match the same type of the query', function() {
