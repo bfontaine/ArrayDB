@@ -232,6 +232,31 @@ describe( 'ArrayDB objects', function() {
         
         });
 
+        describe( 'with an array of arrays', function() {
+
+            it( 'should match only arrays of the same length', function() {
+
+                var a = new ArrayDB( [ 1, 'a' ], [ 42, 42 ], [ 1, 2, 3 ] );
+
+                expect( a.query( [ 1 ] ).length ).to.equal( 0 );
+                expect( a.query( [ 42 ] ).length ).to.equal( 0 );
+                expect( a.query( [ 42, 42 ] ).length ).to.equal( 1 );
+                expect( a.query( [ 42, 42, 42 ] ).length ).to.equal( 0 );
+
+            });
+        
+            it( 'should match empty arrays '
+              + 'if the query is an empty one', function() {
+
+                var a = new ArrayDB( [], [1], false, {} );
+
+                expect( a.query( [] ).length ).to.equal( 1 );
+
+
+            });
+        
+        });
+
         describe( 'with an array of mixed values', function() {
         
             it( 'should only match the same type of the query', function() {
