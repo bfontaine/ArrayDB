@@ -158,6 +158,61 @@ describe( 'ArrayDB objects', function() {
 
             });
 
+            it( 'should match Infinity values with an Infinity query', function(){
+            
+                var a = new ArrayDB( Infinity, 1, -Infinity, 3 );
+
+                expect( a.query( Infinity ).length ).to.equal( 1 );
+                expect( a.query( -Infinity ).length ).to.equal( 1 );
+            
+            });
+
+            it( 'should match the query value', function(){
+            
+                var a = new ArrayDB( 1, 2, 3, 2, 1, 42, 1 );
+
+                expect( a.query( 1 ).length ).to.equal( 3 );
+                expect( a.query( 2 ).length ).to.equal( 2 );
+                expect( a.query( 3 ).length ).to.equal( 1 );
+            
+            });
+
+        });
+
+        describe( 'with an array of booleans', function(){
+        
+            it( 'should match the query if it’s a boolean', function(){
+
+                var a = new ArrayDB( true, false, true, true, false );
+
+                expect( a.query( true ).length ).to.equal( 3 );
+                expect( a.query( false ).length ).to.equal( 2 );
+            
+            });
+
+            it( 'should return nothing if the query is not a boolean', function() {
+
+                var a = new ArrayDB( true, false, true, true, false );
+
+                expect( a.query( 1 ).length ).to.equal( 0 );
+                expect( a.query( 0 ).length ).to.equal( 0 );
+
+            });
+        
+        });
+
+        describe( 'with an array of mixed values', function(){
+        
+            it( 'should only match the same type of the query', function() {
+
+                var a = new ArrayDB( true, 1, 0, false, false, [], '' );
+
+                expect( a.query( 1 ).length ).to.equal( 1 );
+                expect( a.query( true ).length ).to.equal( 1 );
+                expect( a.query( false ).length ).to.equal( 2 );
+
+            });
+        
         });
 
     });
