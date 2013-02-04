@@ -48,7 +48,7 @@ describe( 'ArrayDB objects', function() {
 
     });
 
-    describe('’ .query method', function() {
+    describe('\b’ .query method', function() {
 
         it( 'should be a function, taking 3 arguments', function() {
 
