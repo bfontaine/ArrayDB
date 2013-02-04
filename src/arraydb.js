@@ -69,7 +69,14 @@
         // Numbers (primitive values)
         if ( 0 + obj === obj && 0 + pattern === pattern ) {
 
-            return obj.toString() === pattern.toString();
+            return obj === pattern;
+
+        }
+
+        // NaN
+        if ( isNaN( obj ) && isNaN( pattern ) ) {
+
+            return true;
 
         }
 
@@ -116,12 +123,12 @@
 
             return this.filter(function( e ) {
                 return match( e, q );
-            });
+            }).slice( offset, offset + limit );
 
         }
 
         res = [];
-        _l  = this.length;
+        _l  = Math.min( this.length, limit );
         i   = 0;
 
         for ( ; i<_l; i++ ) {
