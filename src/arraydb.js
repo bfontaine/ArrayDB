@@ -1,5 +1,10 @@
 (function( ctx ) {
 
+    /**
+     * Main object
+     * @a (Optional): if it's an array, it's used as the DB table. If not
+     *                all arguments are put in the DB table.
+     **/
     var ArrayDB = function ArrayDB( a ){
 
         var init = [], i, _l;
@@ -24,9 +29,17 @@
 
     ArrayDB.prototype = new Array();
 
+    // == Helpers ==
+
+    function is_number( n )  { return +n === n; }
+    function is_nan( n )     { return typeof n === 'number' && isNaN( n ); }
+    function is_boolean( b ) { return !!b === b; }
+    function is_string( s )  { return ''+s === ''+s; }
+
+    // == /Helpers ==
+
     /**
-     * Private function. Return `true` if the one of the conditions
-     * below are true:
+     * Private function. Return `true` if the one of the conditions below are true:
      *
      *  - @obj and @pattern are both strings, numbers, regexes,
      *    or functions, AND have the same .toString() value.
@@ -40,9 +53,12 @@
      *    match(@obj[p], @pattern[p]) is truthy
      *
      **/
-    function match( obj, pattern ) {
+    function match( obj, pattern, opts ) {
 
-        var i, _l;
+        var i, _l,
+
+            // strict mode
+            strict  = opts && opts.strict;
 
         if ( typeof obj !== typeof pattern ) { return false; }
 
@@ -169,8 +185,10 @@
 
         if ( typeof Array.prototype.filter === 'function' ) {
 
-            return this.filter(function( e ) {
-                return match( e, q );
+            return this.filter(function( o ) {
+
+                return match( o, q );
+            
             }).slice( offset, offset + limit );
 
         }
@@ -182,6 +200,8 @@
         for ( ; i<_l; i++ ) {
 
             if ( match( this[ i ], q ) ) {
+
+                if ( offset-- > 0 ) { continue; }
 
                 res.push( this[ i ] );
 
