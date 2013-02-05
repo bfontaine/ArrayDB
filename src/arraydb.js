@@ -44,6 +44,8 @@
 
         var i, _l;
 
+        if ( typeof obj !== typeof pattern ) { return false; }
+
         // null
         if ( obj === null && pattern === null ) { return true; }
 
@@ -98,9 +100,11 @@
 
         }
 
-        if ( obj instanceof Array && pattern instanceof Array ) {
+        // Arrays
+        if ( pattern instanceof Array ) {
 
-            if ( obj.length !== pattern.length ) { return false; }
+            if (   !obj instanceof Array
+                || obj.length !== pattern.length ) { return false; }
 
             for ( i=0, _l=obj.length ; i<_l; i++ ) {
 
@@ -112,7 +116,29 @@
 
         }
 
-        // ("classic"-)Objects -> TODO
+        // other Objects
+        if ( obj instanceof Object && pattern instanceof Object ) {
+
+            for ( i in pattern ) {
+
+                console.log(i);
+
+                if ( pattern.hasOwnProperty( i ) ) {
+
+                    if (   !( i in obj )
+                        || !match( obj[ i ], pattern[ i ] ) ) {
+
+                            console.log( i, obj[ i ], pattern[ i ] );
+                            return false;
+
+                        }
+
+                }
+
+            }
+
+            return true;
+        }
 
         return false;
 
