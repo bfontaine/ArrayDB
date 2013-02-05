@@ -151,7 +151,7 @@ describe( 'ArrayDB objects', function() {
 
             it( 'should match NaN values with a NaN query', function() {
 
-                var a = new ArrayDB( 1, NaN, 2 );
+                var a = new ArrayDB( 1, NaN, 2, ['a'] ); // isNaN(['a']) == true
 
                 expect( a.query( NaN ).length ).to.equal( 1 );
                 expect( a.query( NaN ).toString() ).to.equal( 'NaN' );
