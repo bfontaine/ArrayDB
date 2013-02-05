@@ -252,9 +252,32 @@ describe( 'ArrayDB objects', function() {
 
                 expect( a.query( [] ).length ).to.equal( 1 );
 
+            });
+
+            it( 'should work with arrays of arrays', function() {
+
+                var a = new ArrayDB( [ 1 ], [[ 1 ]], 42 );
+
+                expect( a.query( 1 ).length ).to.equal( 0 );
+                expect( a.query( [ 1 ] ).length ).to.equal( 1 );
+                expect( a.query( [[ 1 ]] ).length ).to.equal( 1 );
 
             });
-        
+
+        });
+
+        describe( 'with an array of other object values', function() {
+
+            it( 'should match all objects '
+              + 'if the query is an empty one', function () {
+
+                var a = new ArrayDB( {}, {}, { a: 42 }, 12 );
+
+                expect( a.query( {} ).length ).to.equal( 3 );
+
+            });
+
+
         });
 
         describe( 'with an array of mixed values', function() {
