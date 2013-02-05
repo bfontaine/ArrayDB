@@ -29,145 +29,118 @@
 
     ArrayDB.prototype = new Array();
 
-    // == Helpers ==
+    // better typeof
+    function get_type( o ) {
 
-    function is_number( n )  { return +n === n; }
-    function is_nan( n )     { return typeof n === 'number' && isNaN( n ); }
-    function is_boolean( b ) { return !!b === b; }
-    function is_string( s )  { return ''+s === ''+s; }
+        if ( o === null )                          { return 'null'; }
+        if ( o === undefined )                     { return 'undefined'; }
 
-    // == /Helpers ==
+        if ( o instanceof Array )                  { return 'array'; }
+        if ( o instanceof RegExp )                 { return 'regexp'; }
+        
+        if ( typeof o === 'function' )             { return 'function'; }
 
-    /**
-     * Private function. Return `true` if the one of the conditions below are true:
-     *
-     *  - @obj and @pattern are both strings, numbers, regexes,
-     *    or functions, AND have the same .toString() value.
-     *
-     *  - @obj and @pattern are both null or undefined
-     *
-     *  - @obj and @pattern are arrays, and for i from 0 to @pattern.length,
-     *    match(@obj[i], @pattern[i]) is truthy
-     *
-     *  - @obj and @pattern are arrays, and for each @pattern's property p,
-     *    match(@obj[p], @pattern[p]) is truthy
-     *
-     **/
-    function match( obj, pattern, opts ) {
+        if ( !!o === o || o instanceof Boolean )   { return 'boolean'; }
+        if (  +o === o || o instanceof Number )    { return 'number'; }
+        if ( ''+o === o || o instanceof String )   { return 'string'; }
 
-        var i, _l,
+        if ( isNaN( o ) && typeof o === 'number' ) { return 'nan'; }
 
-            // strict mode
-            strict  = opts && opts.strict;
+        return 'object';
+    }
 
-        if ( typeof obj !== typeof pattern ) { return false; }
+    function match_arrays( o, p, strict ) {
 
-        // null
-        if ( obj === null && pattern === null ) { return true; }
+        var i, _l;
 
-        // undefined
-        if (   obj === undefined
-            && pattern === undefined
-            && arguments.length >= 2 ) {
+        if ( o.length !== p.length ) { return false; }
 
-            return true;
+        for( i=0, _l=o.length; i<_l; i++ ) {
+
+            if ( !match( o[ i ], p[ i ], strict ) ) { return false; }
 
         }
 
-        // Number, Boolean & String objects, regexes & functions
-        if (
-               ( obj instanceof Number && pattern instanceof Number )
-            || ( obj instanceof String && pattern instanceof String )
-            || ( obj instanceof Boolean && pattern instanceof Boolean )
-            || ( obj instanceof RegExp && pattern instanceof RegExp )
-            || ( obj instanceof Function && pattern instanceof Function )
-           ) {
+        return true;
 
-            return obj.toString() === pattern.toString();
+    }
 
+    function match_objects( o, p, strict ) {
+
+        var prop;
+
+        for ( prop in p ) {
+
+            if ( p.hasOwnProperty( prop ) && !( prop in o ) ) { return false; }
+            if ( !match( o[ prop ], p[ prop ], strict ) ) { return false; }
+        
         }
 
-        // Numbers (primitive values)
-        if ( 0 + obj === obj && 0 + pattern === pattern ) {
+        return true;
 
-            return obj === pattern;
+    }
 
-        }
+    // o:object, p:pattern
+    function match( o, p, strict ) {
 
-        // NaN
-        if (   typeof obj === 'number' && isNaN( obj )
-            && typeof pattern === 'number' && isNaN( pattern ) ) {
+        var o_type = get_type( o ),
+            p_type = get_type( p );
 
-            return true;
+        if ( strict ) {
 
-        }
+            // In strict mode, objects must have the same type
+            if ( o_type !== p_type ) { return false; }
 
-        // Strings (primitive values)
-        if ( '' + obj === obj && '' + pattern === pattern ) {
+            switch( o_type ) {
 
-            return obj === pattern;
+                case 'nan':
+                case 'null':
+                case 'undefined':
+                    return true;
 
-        }
+                case 'function':
+                case 'number':
+                case 'regexp':
+                case 'string':
+                    return o.toString() === p.toString();
 
-        // Booleans (primitive values)
-        if ( !!obj === obj && !!pattern === pattern ) {
+                case 'boolean':
+                    return o === p;
 
-            return obj === pattern;
+                case 'array':
+                    return match_arrays( o, p, strict );
 
-        }
-
-        // Arrays
-        if ( pattern instanceof Array ) {
-
-            if (   !obj instanceof Array
-                || obj.length !== pattern.length ) { return false; }
-
-            for ( i=0, _l=obj.length ; i<_l; i++ ) {
-
-                if ( !match( obj[ i ], pattern[ i ] ) ) { return false; }
+                case 'object':
+                    return match_objects( o, p, strict );
 
             }
 
-            return true;
-
         }
-
-        // other Objects
-        if ( obj instanceof Object && pattern instanceof Object ) {
-
-            for ( i in pattern ) {
-
-                if ( pattern.hasOwnProperty( i ) ) {
-
-                    if (   !( i in obj )
-                        || !match( obj[ i ], pattern[ i ] ) ) {
-
-                            return false;
-
-                        }
-
-                }
-
-            }
-
-            return true;
-        }
-
-        return false;
 
     }
 
     /**
      * Main function. Will be called on an ArrayDB or Array
      * object.
-     * @q [Object]: the query
+     * @q [Object]: the query. If it's the only one argument and it has
+     *              a 'query' property, it's used to specify other arguments,
+     *              e.g.: {
+     *                  query: <the query>,
+     *                  limit: <the limit>,
+     *                  offset: <the offset>,
+     *                  strict: <strict mode?>,
+     *                  reverse: <reversed query?>
+     *              }
      * @limit [Number]: optional. The maximum number of results. Default
      *                  to Infinity.
      * @offset [Number]: optional. Default to 0.
      **/
     function query( q, limit, offset ) {
 
-        var i, _l, res;
+        var i, _l, res,
+        
+            strict  = true,
+            reverse = false;
 
         if ( this.length === 0 || arguments.length === 0 ) {
         
@@ -175,7 +148,19 @@
         
         }
 
-        if ( limit === undefined ) {
+        if ( typeof q === 'object' && q != null
+            && 'query' in q
+            && arguments.length === 1 ) {
+
+            limit   = +q.limit;
+            offset  = +q.offset;
+            strict  = !!q.strict;
+            reverse = !!q.reverse;
+            q       = q.query;
+
+        }
+
+        if ( isNaN( limit ) ) {
             
             limit = Infinity;
         
@@ -187,7 +172,7 @@
 
             return this.filter(function( o ) {
 
-                return match( o, q );
+                return match( o, q, true );
             
             }).slice( offset, offset + limit );
 
@@ -199,7 +184,7 @@
 
         for ( ; i<_l; i++ ) {
 
-            if ( match( this[ i ], q ) ) {
+            if ( match( this[ i ], q, true ) ) {
 
                 if ( offset-- > 0 ) { continue; }
 
