@@ -121,14 +121,11 @@
 
             for ( i in pattern ) {
 
-                console.log(i);
-
                 if ( pattern.hasOwnProperty( i ) ) {
 
                     if (   !( i in obj )
                         || !match( obj[ i ], pattern[ i ] ) ) {
 
-                            console.log( i, obj[ i ], pattern[ i ] );
                             return false;
 
                         }
