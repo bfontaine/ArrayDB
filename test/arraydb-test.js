@@ -139,6 +139,27 @@ describe( 'ArrayDB objects', function() {
 
         });
 
+        it( 'should ignore the first 2 elements '
+          + 'if the offset is 2', function() {
+
+            var a = new ArrayDB( 42, 7, 42, 8, 42, 42 );
+
+            expect( a.query( 42, 10, 2 ).length ).to.equal( 2 );
+
+        });
+
+        it( 'should ignore the first element '
+          + 'if the offset is 1, with to Array#filter', function() {
+
+            var a       = new ArrayDB( 42, 7, 42, 8, 42, 42 ),
+                _filter = Array.prototype.filter;
+
+            Array.prototype.filter = null;
+            expect( a.query( 42, 10, 1 ).length ).to.equal( 3 );
+            Array.prototype.filter = _filter;
+
+        });
+
         describe( 'with an array of numbers', function() {
 
             it( 'should match only equal numbers', function() {
@@ -205,7 +226,7 @@ describe( 'ArrayDB objects', function() {
 
         describe( 'with an array of `undefined` values', function(){
         
-            it( 'should only match only '
+            it( 'should only match '
               +'if the query is defined to `undefined`', function() {
 
                 var a = new ArrayDB( undefined );
