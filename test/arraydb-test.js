@@ -469,3 +469,73 @@ describe( 'ArrayDB#monkeyPatch method', function() {
     });
 
 });
+
+describe( 'ArrayDB helpers', function() {
+
+    it( 'should include an `any` function', function() {
+
+        var a = new ArrayDB( [ 1, 2, 'foo' ],
+                             [ 1, 3, 'foo' ],
+                             [ 1, 3, 'bar' ] );
+
+        expect( a.query({
+            query: [ 1, ArrayDB.any, 'foo' ],
+            strict: false }).length ).to.equal( 2 );
+
+    });
+
+    it( 'should include a `lt` function', function() { 
+
+        var a = new ArrayDB( 1, 2, 3, 4 );
+
+        expect( a.query({
+            query: ArrayDB.lt( 3 ), strict: false }).length ).to.equal( 2 );
+
+    });
+
+    it( 'should include a `gt` function', function() {
+
+        var a = new ArrayDB( 1, 2, 3, 4 );
+
+        expect( a.query({
+            query: ArrayDB.gt( 3 ), strict: false }).length ).to.equal( 1 );
+
+    });
+
+    it( 'should include a `le` function', function() {
+
+        var a = new ArrayDB( 1, 2, 3, 4 );
+
+        expect( a.query({
+            query: ArrayDB.le( 3 ), strict: false }).length ).to.equal( 3 );
+
+    });
+
+    it( 'should include a `ge` function', function() {        
+
+        var a = new ArrayDB( 1, 2, 3, 4 );
+
+        expect( a.query({
+            query: ArrayDB.ge( 3 ), strict: false }).length ).to.equal( 2 );
+
+    });
+
+    it( 'should include an `eq` function', function() {        
+
+        var a = new ArrayDB( 1, 2, 3, 4 );
+        
+        expect( a.query({
+            query: ArrayDB.eq( 3 ), strict: false }).length ).to.equal( 1 );
+    
+    });
+    
+    it( 'should include a `ne` function', function() {        
+
+        var a = new ArrayDB( 1, 2, 3, 4 );
+
+        expect( a.query({
+            query: ArrayDB.ne( 3 ), strict: false }).length ).to.equal( 3 );
+    
+    });
+        
+});      

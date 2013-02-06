@@ -25,9 +25,42 @@
 
         }
 
-    };
+    }, comp, p;
 
     ArrayDB.prototype = new Array();
+
+    // helpers
+    comp = {
+        lt: function( a, b ) { return a < b; },
+        gt: function( a, b ) { return a > b; },
+        le: function( a, b ) { return a <= b; },
+        ge: function( a, b ) { return a >= b; },
+        eq: function( a, b ) { return a === b; },
+        ne: function( a, b ) { return a !== b; }
+    };
+
+    for ( p in comp ) {
+        if ( comp.hasOwnProperty( p ) ) {
+
+            (function( p ) {
+
+                // currying
+                ArrayDB[ p ] = function( initial ) {
+                    
+                    return function( el ) {
+                
+                        return comp[ p ]( el, initial );
+                
+                    };
+
+                };
+
+            })( p );
+
+        }
+    }
+
+    ArrayDB.any = function() { return true; };
 
     // better typeof
     function get_type( o ) {
