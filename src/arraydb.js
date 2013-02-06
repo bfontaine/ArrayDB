@@ -131,6 +131,8 @@
                     return !!p( o );
 
                 case 'nan':
+                    return isNaN( o );
+
                 case 'null':
                 case 'undefined':
                     return o_type === p_type;
@@ -139,11 +141,9 @@
                     return match_objects( o, p, false );
 
                 case 'regexp':
-                    return p.test( o );
+                    return o_type === 'string' && p.test( o );
 
             }
-
-
 
         }
 
@@ -202,7 +202,7 @@
 
             return this.filter(function( o ) {
 
-                return match( o, q, true );
+                return match( o, q, strict );
             
             }).slice( offset, offset + limit );
 
@@ -214,7 +214,7 @@
 
         for ( ; i<_l; i++ ) {
 
-            if ( match( this[ i ], q, true ) ) {
+            if ( match( this[ i ], q, strict ) ) {
 
                 if ( offset-- > 0 ) { continue; }
 
