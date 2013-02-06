@@ -257,7 +257,8 @@ describe( 'ArrayDB objects', function() {
 
                     d = new ArrayDB( a, b, c );
 
-                expect( d.query( a.slice() ) ).to.deep.equal([ a ]);
+                expect( d.query({
+                    query: a.slice(), strict: false }) ).to.deep.equal([ a ]);
 
             });
 
@@ -269,7 +270,8 @@ describe( 'ArrayDB objects', function() {
 
                     a = new ArrayDB( o, p );
 
-                expect( a.query({ moo: 2 }).length ).to.equal( 0 );
+                expect( a.query({
+                    query: { moo: 2 }, strict: false }).length ).to.equal( 0 );
 
             });
 
@@ -282,8 +284,11 @@ describe( 'ArrayDB objects', function() {
 
                     a = new ArrayDB( o, p, q );
 
-                expect( a.query({}).length ).to.equal( 3 );
-                expect( a.query({ bar: { a: 2 } }).length ).to.equal( 2 );
+                expect( a.query({
+                    query: {}, strict: true }).length ).to.equal( 3 );
+                expect( a.query({
+                    query: { bar: { a: 2 } },
+                    strict: true }).length ).to.equal( 2 );
 
             });
     
@@ -359,12 +364,88 @@ describe( 'ArrayDB objects', function() {
 
             });
 
-            // TODO:
-            // 'array'
-            // 'function'
-            // 'number'
-            // 'string'
-            // 'object'
+            it( 'should match function values with other ones '
+              + 'if the former called on the later returns a truthy value',
+                function() {
+
+                var gt2    = function( e ) { return e > 2; },
+                    eq3    = function( e ) { return e == 3; },
+                    truthy = function() { return 'foo'; },
+
+                    a = new ArrayDB( 1, 2, 3, 4, 5 );
+
+                expect( a.query({
+                    query: gt2, strict: false }).length ).to.equal( 3 );
+                expect( a.query({
+                    query: eq3, strict: false }).length ).to.equal( 1 );
+                expect( a.query({
+                    query: truthy, strict: false }).length ).to.equal( 5 );
+
+            });
+
+            it( 'should match string values if they are the same', function() {
+
+                var a = new ArrayDB( 'foo', 'foo\n', 'FOO' );
+
+                expect( a.query({
+                    query: 'FOO', strict: false }).length ).to.equal( 1 );
+
+            });
+
+            it( 'should match array values if their elements match', function() {
+
+                var a = [ [[ 1 ]], [ 3, 2 ], true, 'NaN' ],
+                    b = [  [ 1 ],  [ 3, 2 ], true, 'NaN' ],
+                    c = [ [[ 1 ]], [ 3, 3 ], 1, 'NaN' ],
+
+                    d = new ArrayDB( a, b, c );
+
+                expect( d.query({
+                    query: a.slice(), strict: false }) ).to.deep.equal([ a ]);
+
+            });
+
+            it( 'should not match object values '
+              + 'if they don\'t have the same properties', function() {
+
+                var o = { foo: 1, bar: 2 },
+                    p = {},
+
+                    a = new ArrayDB( o, p );
+
+                expect( a.query({
+                    query: { moo: 2 }, strict: false }).length ).to.equal( 0 );
+
+            });
+
+            it( 'should match object values '
+              + 'if their mutual properties have the same values', function() {
+
+                var o = { foo: [ 2 ], bar: { a: 2 }, moo: NaN },
+                    p = { bar: { a: 2, b: 4 } },
+                    q = { moo: NaN, barfoo: 42 },
+
+                    a = new ArrayDB( o, p, q );
+
+                expect( a.query({
+                    query: {}, strict: false }).length ).to.equal( 3 );
+                expect( a.query({
+                    query: { bar: { a: 2 } },
+                    strict: false }).length ).to.equal( 2 );
+
+            });
+
+            it( 'should match number values if they are the same', function() {
+
+                var a = new ArrayDB( 1, 2, -Infinity, Infinity, 0, 2, 0.1 );
+
+                expect( a.query({ query: 2, strict: false }).length ).to.equal( 2 );
+                expect( a.query({
+                    query: Infinity, strict: false }).length ).to.equal( 1 );
+                expect( a.query({
+                    query: 0.1, strict: false }).length ).to.equal( 1 );
+
+            });
 
         });
 
