@@ -38,24 +38,24 @@ describe( 'ArrayDB objects', function() {
 
     it( 'can be initialized with a set of arguments', function() {
 
-        var a = new ArrayDB( 1, 2, 'foo' );
+        var a = new ArrayDB( 1, 2, 'foo' ),
+            b = new ArrayDB( [], [] );
 
         expect( a.length ).to.equal( 3 );
+        expect( b.length ).to.equal( 2 );
         expect( a[0] ).to.equal( 1 );
         expect( a[1] ).to.equal( 2 );
         expect( a[2] ).to.equal( 'foo' );
 
-
     });
 
-    describe('\b’ .query method', function() {
+    describe('.query method', function() {
 
-        it( 'should be a function, taking 3 arguments', function() {
+        it( 'should be a function', function() {
 
             var a = new ArrayDB();
 
             expect( a.query ).to.be.a( 'function' );
-            expect( a.query.length ).to.be.equal( 3 );
 
         });
 
@@ -86,7 +86,7 @@ describe( 'ArrayDB objects', function() {
 
         });
 
-        it( 'should be empty if the object is empty', function() {
+        it( 'should be empty if the query is empty', function() {
 
             var a = new ArrayDB(),
                 b = new ArrayDB([]),
@@ -98,235 +98,163 @@ describe( 'ArrayDB objects', function() {
 
         });
 
-        it( 'should be empty if the query is empty', function() {
+        it( 'should limit the results count if the `limit` param is set',
+            function() {
 
-            var a = new ArrayDB( 1, 2, 3 );
+            var a = new ArrayDB( 1, 1, 1, 2, 12, 1, 5 );
 
-            expect( a.query() ).to.deep.equal( [] );
-
-        });
-
-        it( 'should be empty if the query is not of '
-          + 'the same type of any of the DB elements', function() {
-
-            var a = new ArrayDB( 1, 2, 3 );
-
-            expect( a.query( function(){} ) ).to.deep.equal( [] );
-            expect( a.query( undefined ) ).to.deep.equal( [] );
-            expect( a.query( true ) ).to.deep.equal( [] );
-            expect( a.query( null ) ).to.deep.equal( [] );
-            expect( a.query( /o/ ) ).to.deep.equal( [] );
-            expect( a.query( {} ) ).to.deep.equal( [] );
-            expect( a.query( [] ) ).to.deep.equal( [] );
+            expect( a.query( 1, 2 ).length ).to.equal( 2 );
+            expect( a.query({ query: 1, limit: 2 }).length ).to.equal( 2 );
 
         });
 
-        it( 'should be empty if the `limit` is less than 1', function() {
+        it( 'should slice the results if the `offset` param is set',
+            function() {
 
-            var a = new ArrayDB( 1, 2, 3 );
+            var a = new ArrayDB( 1, 1, 1, 2, 12, 1, 5 );
 
-            expect( a.query( 2, 0 ) ).to.deep.equal( [] );
-
-        });
-
-        it( 'should be empty if the `offset` is equal or larger '
-          + 'than the array size', function() {
-
-            var a = new ArrayDB( 1, 2, 3 );
-
-            expect( a.query( 2, 10, 3 ) ).to.deep.equal( [] );
-            expect( a.query( 2, 10, 4 ) ).to.deep.equal( [] );
+            expect( a.query( 1, 10, 1 ).length ).to.equal( 3 );
+            expect( a.query({ query: 1, offset: 1 }).length ).to.equal( 3 );
 
         });
 
-        it( 'should ignore the first 2 elements '
-          + 'if the offset is 2', function() {
+        it( 'should work without Array#filter', function() {
 
-            var a = new ArrayDB( 42, 7, 42, 8, 42, 42 );
-
-            expect( a.query( 42, 10, 2 ).length ).to.equal( 2 );
-
-        });
-
-        it( 'should ignore the first element '
-          + 'if the offset is 1, with to Array#filter', function() {
-
-            var a       = new ArrayDB( 42, 7, 42, 8, 42, 42 ),
-                _filter = Array.prototype.filter;
+            var a = new ArrayDB( 42, 'something', [], 42, 78 ),
+                f = Array.prototype.filter;
 
             Array.prototype.filter = null;
-            expect( a.query( 42, 10, 1 ).length ).to.equal( 3 );
-            Array.prototype.filter = _filter;
+
+            expect( a.query( 42 ).length ).to.equal( 2 );
+            expect( a.query( 42, 1 ).length ).to.equal( 1 );
+            expect( a.query( 42, 3, 1 ).length ).to.equal( 1 );
+
+            expect( a.query({ query: 42 }).length ).to.equal( 2 );
+            expect( a.query({ query: 42, limit: 1 }).length ).to.equal( 1 );
+            expect( a.query({ query: 42, offset: 1 }).length ).to.equal( 1 );
+
+            Array.prototype.filter = f;
 
         });
 
-        describe( 'with an array of numbers', function() {
+        describe( 'in strict mode', function() {
 
-            it( 'should match only equal numbers', function() {
+            it( 'should match only elements of the same type', function() {
 
-                var a = new ArrayDB( 42, 1, 18, -42, 42 );
+                var a = new ArrayDB( 2, '2', [2], true );
 
-                expect( a.query( 42 ) ).to.deep.equal([ 42, 42 ]);
-
-            });
-
-            it( 'should match NaN values with a NaN query', function() {
-
-                var a = new ArrayDB( 1, NaN, 2, ['a'] ); // isNaN(['a']) == true
-
-                expect( a.query( NaN ).length ).to.equal( 1 );
-                expect( a.query( NaN ).toString() ).to.equal( 'NaN' );
+                expect( a.query({
+                    query: 2, strict: true }).length ).to.equal( 1 );
+                expect( a.query({
+                    query: '2', strict: true }).length ).to.equal( 1 );
+                expect( a.query({
+                    query: [2], strict: true }).length ).to.equal( 1 );
+                expect( a.query({
+                    query: true, strict: true }).length ).to.equal( 1 );
 
             });
 
-            it( 'should match Infinity values '
-              + 'with an Infinity query', function(){
-            
-                var a = new ArrayDB( Infinity, 1, -Infinity, 3 );
+            it( 'should match booleans if they are the same values',
+                function() {
 
-                expect( a.query( Infinity ).length ).to.equal( 1 );
-                expect( a.query( -Infinity ).length ).to.equal( 1 );
-            
+                var a = new ArrayDB( false, true, 1, false );
+
+                expect( a.query({
+                    query: true, strict: true }).length ).to.deep.equal( 1 );
+
+                expect( a.query({
+                    query: false, strict: true }).length ).to.deep.equal( 2 );
+
             });
 
-            it( 'should match the query value', function(){
-            
-                var a = new ArrayDB( 1, 2, 3, 2, 1, 42, 1 );
+            it( 'should match null values if they are the same', function() {
 
-                expect( a.query( 1 ).length ).to.equal( 3 );
-                expect( a.query( 2 ).length ).to.equal( 2 );
-                expect( a.query( 3 ).length ).to.equal( 1 );
-            
+                var a = new ArrayDB( null, 'null', false );
+
+                expect( a.query({
+                    query: null, strict: true }).length ).to.equal( 1 );
+
             });
 
+            it( 'should match undefined values if they are the same', function() {
+
+                var a = new ArrayDB( undefined, 'undefined' );
+
+                expect( a.query({
+                    query: undefined, strict: true }).length ).to.equal( 1 );
+
+            });
+
+            it( 'should not match undefined values with an empty query',
+                function() {
+
+                var a = new ArrayDB( undefined, 'undefined' );
+
+                expect( a.query({ strict: true }).length ).to.equal( 0 );
+
+            });
+
+            it( 'should match regexp values if they are the same', function() {
+
+                var a = new ArrayDB( /foo*bar/, /foo\*bar/, /foo*bar/g,
+                                     'foo*bar', 'foobar' );
+
+                expect( a.query({
+                    query: /foo*bar/, strict: true }).length ).to.equal( 1 );
+
+            });
+
+            it( 'should match number values if they are the same', function() {
+
+                var a = new ArrayDB( 1, 2, -Infinity, Infinity, 0, 2, 0.1 );
+
+                expect( a.query({ query: 2, strict: true }).length ).to.equal( 2 );
+                expect( a.query({
+                    query: Infinity, strict: true }).length ).to.equal( 1 );
+                expect( a.query({
+                    query: 0.1, strict: true }).length ).to.equal( 1 );
+
+            });
+
+            it( 'should match NaN values if they are the same', function() {
+
+                var a = new ArrayDB( NaN, 42, NaN, 'NaN', ['a'] );
+
+                expect( a.query({
+                    query: NaN, strict: true }).length ).to.equal( 2 );
+
+            });
+
+            it( 'should match string values if they are the same', function() {
+
+                var a = new ArrayDB( 'foo', 'foo\n', 'FOO' );
+
+                expect( a.query({
+                    query: 'FOO', strict: true }).length ).to.equal( 1 );
+
+            });
+
+            it( 'should match functions values '
+              + 'if their string values are the same', function() {
+
+                var f = function f() { return 2+2; },
+                    g = function g() { return 2+2; },
+                    h = function f() { return 2+2; },
+                    i = function f() { return 2+3; },
+
+                    a = new ArrayDB( f, g, h, i );
+
+                expect( a.query({
+                    query: f, strict: true }).length ).to.equal( 2 );
+
+          });
+
+        // TODO arrays & objects
+    
         });
 
-        describe( 'with an array of booleans', function(){
-        
-            it( 'should match the query if it’s a boolean', function(){
+        // TODO in non-strict mode
 
-                var a = new ArrayDB( true, false, true, true, false );
-
-                expect( a.query( true ).length ).to.equal( 3 );
-                expect( a.query( false ).length ).to.equal( 2 );
-            
-            });
-
-            it( 'should return nothing '
-              + 'if the query is not a boolean', function() {
-
-                var a = new ArrayDB( true, false, true, true, false );
-
-                expect( a.query( 1 ).length ).to.equal( 0 );
-                expect( a.query( 0 ).length ).to.equal( 0 );
-
-            });
-        
-        });
-
-        describe( 'with an array of `undefined` values', function(){
-        
-            it( 'should only match '
-              +'if the query is defined to `undefined`', function() {
-
-                var a = new ArrayDB( undefined );
-
-                expect( a.length ).to.equal( 1 );
-                expect( a.query( undefined ).length ).to.equal( 1 );
-                expect( a.query().length ).to.equal( 0 );
-
-            });
-        
-        });
-
-        describe( 'with an array of regexes', function() {
-        
-            it( 'should match only with exactly equal regexes', function() {
-
-                var a  = new ArrayDB( /foo+/, /barr?/ );
-
-                expect( a.query( /barr?/g ).length ).to.equal( 0 );
-                expect( a.query( /fooo*/ ).length ).to.equal( 0 );
-                expect( a.query( /foo+/ ).length ).to.equal( 1 );
-
-            });
-        
-        });
-
-        describe( 'with an array of arrays', function() {
-
-            it( 'should match only arrays of the same length', function() {
-
-                var a = new ArrayDB( [ 1, 'a' ], [ 42, 42 ], [ 1, 2, 3 ] );
-
-                expect( a.query( [ 1 ] ).length ).to.equal( 0 );
-                expect( a.query( [ 42 ] ).length ).to.equal( 0 );
-                expect( a.query( [ 42, 42 ] ).length ).to.equal( 1 );
-                expect( a.query( [ 42, 42, 42 ] ).length ).to.equal( 0 );
-
-            });
-        
-            it( 'should match empty arrays '
-              + 'if the query is an empty one', function() {
-
-                var a = new ArrayDB( [], [1], false, {} );
-
-                expect( a.query( [] ).length ).to.equal( 1 );
-
-            });
-
-            it( 'should work with arrays of arrays', function() {
-
-                var a = new ArrayDB( [ 1 ], [[ 1 ]], 42 );
-
-                expect( a.query( 1 ).length ).to.equal( 0 );
-                expect( a.query( [ 1 ] ).length ).to.equal( 1 );
-                expect( a.query( [[ 1 ]] ).length ).to.equal( 1 );
-
-            });
-
-        });
-
-        describe( 'with an array of other object values', function() {
-
-            it( 'should match all objects '
-              + 'if the query is an empty one', function () {
-
-                var a = new ArrayDB( {}, {}, { a: 42 }, 12 );
-
-                expect( a.query( {} ).length ).to.equal( 3 );
-
-            });
-
-
-        });
-
-        describe( 'with an array of mixed values', function() {
-        
-            it( 'should only match the same type of the query', function() {
-
-                var a = new ArrayDB( true, 1, 0, false, false, [], '' );
-
-                expect( a.query( 1 ).length ).to.equal( 1 );
-                expect( a.query( true ).length ).to.equal( 1 );
-                expect( a.query( false ).length ).to.equal( 2 );
-
-            });
-        
-        });
-
-    });
-
-});
-
-describe( 'ArrayDB#monkeyPatch function', function() {
-
-    it( 'should add a .query method on arrays', function() {
-
-        ArrayDB.monkeyPatch();
-
-        expect( typeof [].query ).to.equal( 'function' );
-        
     });
 
 });
