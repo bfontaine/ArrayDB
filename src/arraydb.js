@@ -93,6 +93,12 @@
 
             switch( o_type ) {
 
+                case 'array':
+                    return match_arrays( o, p, true );
+
+                case 'boolean':
+                    return o === p;
+
                 case 'nan':
                 case 'null':
                 case 'undefined':
@@ -104,16 +110,40 @@
                 case 'string':
                     return o.toString() === p.toString();
 
-                case 'boolean':
-                    return o === p;
-
-                case 'array':
-                    return match_arrays( o, p, strict );
-
                 case 'object':
-                    return match_objects( o, p, strict );
+                    return match_objects( o, p, true );
 
             }
+
+        } else {
+
+            switch( p_type ) {
+
+                case 'array':
+                    return match_arrays( o, p, false );
+
+                case 'boolean':
+                case 'number':
+                case 'string':
+                    return p == o;
+
+                case 'function':
+                    return !!p( o );
+
+                case 'nan':
+                case 'null':
+                case 'undefined':
+                    return o_type === p_type;
+
+                case 'object':
+                    return match_objects( o, p, false );
+
+                case 'regexp':
+                    return p.test( o );
+
+            }
+
+
 
         }
 
@@ -179,7 +209,7 @@
         }
 
         res = [];
-        _l  = Math.min( this.length, limit );
+        _l  = Math.min( this.length, limit + offset );
         i   = 0;
 
         for ( ; i<_l; i++ ) {
