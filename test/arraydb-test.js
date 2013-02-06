@@ -234,26 +234,139 @@ describe( 'ArrayDB objects', function() {
 
             });
 
-            it( 'should match functions values '
-              + 'if their string values are the same', function() {
+            it( 'should match function values '
+               + 'if their string values are the same', function() {
 
-                var f = function f() { return 2+2; },
-                    g = function g() { return 2+2; },
-                    h = function f() { return 2+2; },
-                    i = function f() { return 2+3; },
+                   var f = function f() { return 2+2; },
+                       g = function g() { return 2+2; },
+                       h = function f() { return 2+2; },
+                       i = function f() { return 2+3; },
 
-                    a = new ArrayDB( f, g, h, i );
+                       a = new ArrayDB( f, g, h, i );
 
-                expect( a.query({
-                    query: f, strict: true }).length ).to.equal( 2 );
+                   expect( a.query({
+                       query: f, strict: true }).length ).to.equal( 2 );
 
-          });
+            });
 
-        // TODO arrays & objects
+            it( 'should match array values if their elements match', function() {
+
+                var a = [ [[ 1 ]], [ 3, 2 ], true, 'NaN' ],
+                    b = [  [ 1 ],  [ 3, 2 ], true, 'NaN' ],
+                    c = [ [[ 1 ]], [ 3, 3 ], 1, 'NaN' ],
+
+                    d = new ArrayDB( a, b, c );
+
+                expect( d.query( a.slice() ) ).to.deep.equal([ a ]);
+
+            });
+
+            it( 'should not match object values '
+              + 'if they don\'t have the same properties', function() {
+
+                var o = { foo: 1, bar: 2 },
+                    p = {},
+
+                    a = new ArrayDB( o, p );
+
+                expect( a.query({ moo: 2 }).length ).to.equal( 0 );
+
+            });
+
+            it( 'should match object values '
+              + 'if their mutual properties have the same values', function() {
+
+                var o = { foo: [ 2 ], bar: { a: 2 }, moo: NaN },
+                    p = { bar: { a: 2, b: 4 } },
+                    q = { moo: NaN, barfoo: 42 },
+
+                    a = new ArrayDB( o, p, q );
+
+                expect( a.query({}).length ).to.equal( 3 );
+                expect( a.query({ bar: { a: 2 } }).length ).to.equal( 2 );
+
+            });
     
         });
 
-        // TODO in non-strict mode
+        describe( 'in non-strict mode', function() {
+
+            it( 'should match null values if they are the same', function() {
+
+                var a = new ArrayDB( null, 'null', false );
+
+                expect( a.query({
+                    query: null, strict: false }).length ).to.equal( 1 );
+
+            });
+
+            it( 'should match undefined values if they are the same', function() {
+
+                var a = new ArrayDB( undefined, 'undefined' );
+
+                expect( a.query({
+                    query: undefined, strict: false }).length ).to.equal( 1 );
+
+            });
+
+            it( 'should not match undefined values with an empty query',
+                function() {
+
+                var a = new ArrayDB( undefined, 'undefined' );
+
+                expect( a.query({ strict: false }).length ).to.equal( 0 );
+
+            });
+
+            it( 'should not match regexp values', function() {
+
+                var a = new ArrayDB( /foo*bar/, /foo\*bar/, /foo*bar/g );
+
+                expect( a.query({
+                    query: /foo*bar/, strict: false }).length ).to.equal( 0 );
+
+            });
+
+            it( 'should match regexp values and string values '
+              + 'if the former match the latter', function() {
+
+                var a = new ArrayDB( 'moo', 'foo', 'fooo', 'bar' );
+
+                expect( a.query({
+                    query: /^foo+/, strict: false }).length ).to.equal( 2 );
+
+            });
+
+            it( 'should match boolean with truthy and falsy values',
+                function() {
+
+                var a = new ArrayDB( false, 1, 0, true, '' );
+
+                expect( a.query({
+                    query: true, strict: false }).length ).to.equal( 2 );
+                expect( a.query({
+                    query: false, strict: false }).length ).to.equal( 3 );
+
+            });
+
+            it( 'should match NaN with non-numbers', function() {
+
+                var a = new ArrayDB( 'foo', 42, ['a'], 1 );
+
+                expect( a.query({
+                    query: NaN,
+                    strict: false }) ).to.deep.equal([ 'foo', ['a'] ]);
+
+            });
+
+            // TODO:
+            // 'array'
+            // 'function'
+            // 'number'
+            // 'string'
+            // 'object'
+
+        });
 
     });
 
