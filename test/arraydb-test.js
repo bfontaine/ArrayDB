@@ -371,3 +371,17 @@ describe( 'ArrayDB objects', function() {
     });
 
 });
+
+describe( 'ArrayDB#monkeyPatch method', function() {
+
+    it( 'should add a .query method on arrays', function() {
+    
+        var a = [];
+
+        expect( a.query ).to.be.a( 'undefined' );
+        ArrayDB.monkeyPatch();
+        expect( a.query ).to.be.a( 'function' );
+    
+    });
+
+});
