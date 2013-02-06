@@ -372,14 +372,17 @@ describe( 'ArrayDB objects', function() {
                     eq3    = function( e ) { return e == 3; },
                     truthy = function() { return 'foo'; },
 
-                    a = new ArrayDB( 1, 2, 3, 4, 5 );
+                    a = new ArrayDB( 1, 2, 3, 4, 5, { foo: 2 }, { foo: 3 } );
 
                 expect( a.query({
                     query: gt2, strict: false }).length ).to.equal( 3 );
                 expect( a.query({
                     query: eq3, strict: false }).length ).to.equal( 1 );
                 expect( a.query({
-                    query: truthy, strict: false }).length ).to.equal( 5 );
+                    query: truthy, strict: false }).length ).to.equal( 7 );
+
+                expect( a.query({
+                    query: { foo: eq3 }, strict: false }).length ).to.equal( 1 );
 
             });
 
