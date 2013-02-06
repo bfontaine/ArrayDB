@@ -120,7 +120,9 @@
             switch( p_type ) {
 
                 case 'array':
-                    return match_arrays( o, p, false );
+                    return o_type === 'array'
+                                ? match_arrays( o, p, false )
+                                : false;
 
                 case 'boolean':
                 case 'number':
@@ -138,7 +140,9 @@
                     return o_type === p_type;
 
                 case 'object':
-                    return match_objects( o, p, false );
+                    return o_type === 'object'
+                                ? match_objects( o, p, false )
+                                : false;
 
                 case 'regexp':
                     return o_type === 'string' && p.test( o );
