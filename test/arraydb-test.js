@@ -291,6 +291,19 @@ describe( 'ArrayDB objects', function() {
                     strict: true }).length ).to.equal( 2 );
 
             });
+
+            it( 'should reverse the query if the `reverse` param is truthy',
+                function() {
+
+                var a = new ArrayDB( 1, NaN, true, 'false', [] );
+
+                expect( a.query({
+                    query: NaN,
+                    strict: true,
+                    reverse: true
+                }) ).to.deep.equal([ 1, true, 'false', [] ]);
+
+            });
     
         });
 
@@ -442,11 +455,25 @@ describe( 'ArrayDB objects', function() {
 
                 var a = new ArrayDB( 1, 2, -Infinity, Infinity, 0, 2, 0.1 );
 
-                expect( a.query({ query: 2, strict: false }).length ).to.equal( 2 );
+                expect( a.query({
+                    query: 2, strict: false }).length ).to.equal( 2 );
                 expect( a.query({
                     query: Infinity, strict: false }).length ).to.equal( 1 );
                 expect( a.query({
                     query: 0.1, strict: false }).length ).to.equal( 1 );
+
+            });
+
+            it( 'should reverse the query if the `reverse` param is truthy',
+                function() {
+
+                var a = new ArrayDB( 1, NaN, true, 'false', [] );
+
+                expect( a.query({
+                    query: NaN,
+                    strict: false,
+                    reverse: true
+                }) ).to.deep.equal([ 1, true, [] ]);
 
             });
 

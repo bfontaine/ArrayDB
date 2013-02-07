@@ -239,7 +239,7 @@
 
             return this.filter(function( o ) {
 
-                return match( o, q, strict );
+                return match( o, q, strict ) === !reverse;
             
             }).slice( offset, offset + limit );
 
@@ -251,7 +251,7 @@
 
         for ( ; i<_l; i++ ) {
 
-            if ( match( this[ i ], q, strict ) ) {
+            if ( match( this[ i ], q, strict ) === !reverse ) {
 
                 if ( offset-- > 0 ) { continue; }
 
