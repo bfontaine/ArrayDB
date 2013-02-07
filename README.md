@@ -28,6 +28,15 @@ var a = new ArrayDB([
 a.query({ age: 42 }); // [ { name:"Foo", age:42 }, { name:"Moo",age:42} ]
 ```
 
+It takes an object with the key below:
+
+* `query` [Anything]: The query. Can be any JS value.
+* `limit` [Number]: Optional (default to `Infinity`).
+* `offset` [Number]: Optional (default to `0`).
+* `reverse` [Boolean]: Optional (default to `false`). Reverse the query.
+* `strict` [Boolean]: Optional (default to `true`). Define the matching mode of
+  the query (see below).
+
 You can also monkey-patch `Array` objects:
 
 ```js
