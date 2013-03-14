@@ -6,9 +6,19 @@ Use your arrays as DB tables, and make queries on them.
 
 ## Install
 
+This library was mostly written for the client-side, but it’s available as a
+nppm package.
+
+### Node.js
+
 ```
 [sudo] npm install [-g] arraydb
 ```
+
+### Client-side
+
+Use the `src/arraydb.js` file.
+
 
 ## Usage
 
