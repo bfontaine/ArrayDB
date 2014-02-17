@@ -7,36 +7,41 @@
      **/
     var ArrayDB = function ArrayDB( a ){
 
-        var init = [], i, _l;
+            var init = [], i, _l;
 
-        if ( arguments.length === 1 && arguments[0] instanceof Array ) {
-        
-            init = a;
-        
-        } else if ( arguments.length >= 1 ) {
+            if ( arguments.length === 1 && arguments[0] instanceof Array ) {
 
-            init = arguments;
+                init = a;
 
-        }
+            } else if ( arguments.length >= 1 ) {
 
-        for ( i=0, _l=init.length; i<_l; i++ ) {
+                init = arguments;
 
-            this[ this.length++ ] = init[ i ];
+            }
 
-        }
+            for ( i=0, _l=init.length; i<_l; i++ ) {
 
-    }, comp, p;
+                this[ this.length++ ] = init[ i ];
+
+            }
+
+        },
+
+        // used to mark objects when matching to handle circular references
+        // (#1)
+        randKey = '__arraydb-' + Date.now(),
+        comp, p;
 
     ArrayDB.prototype = new Array();
 
     // helpers
     comp = {
-        lt: function( a, b ) { return a < b; },
-        gt: function( a, b ) { return a > b; },
-        le: function( a, b ) { return a <= b; },
-        ge: function( a, b ) { return a >= b; },
-        eq: function( a, b ) { return a === b; },
-        ne: function( a, b ) { return a !== b; }
+        lt:  function( a, b ) { return a < b; },
+        gt:  function( a, b ) { return a > b; },
+        le:  function( a, b ) { return a <= b; },
+        ge:  function( a, b ) { return a >= b; },
+        eq:  function( a, b ) { return a === b; },
+        ne:  function( a, b ) { return a !== b; }
     };
 
     for ( p in comp ) {
@@ -46,11 +51,11 @@
 
                 // currying
                 ArrayDB[ p ] = function( initial ) {
-                    
+
                     return function( el ) {
-                
+
                         return comp[ p ]( el, initial );
-                
+
                     };
 
                 };
@@ -70,7 +75,7 @@
 
         if ( o instanceof Array )                  { return 'array'; }
         if ( o instanceof RegExp )                 { return 'regexp'; }
-        
+
         if ( typeof o === 'function' )             { return 'function'; }
 
         if ( !!o === o || o instanceof Boolean )   { return 'boolean'; }
@@ -98,19 +103,56 @@
 
     }
 
+    // mark an object
+    var mark = (function() {
+        var idx = 0;
+
+        return function( o ) {
+            o[randKey] = ++idx;
+        }
+
+    })();
+
+    // clean up marked objects
+    function cleanMarks( o ) {
+        delete o[randKey];
+
+        for ( prop in o ) {
+            if ( p.hasOwnProperty( prop )
+                    && get_type( p[prop] ) == 'object'
+                    && randKey in p[prop]) {
+               cleanMarks( p[prop] );
+            }
+        }
+    }
+
+    // clean up marked objects and return result
+    function match_objects_teardown( o, p, result ) {
+        if ( get_type( o ) == 'object' ) { cleanMarks( o ); }
+        if ( get_type( p ) == 'object' ) { cleanMarks( p ); }
+        return result;
+    }
+
     function match_objects( o, p, strict ) {
 
         var prop;
 
-        for ( prop in p ) {
-
-            if ( p.hasOwnProperty( prop ) && !( prop in o ) ) { return false; }
-            if ( !match( o[ prop ], p[ prop ], strict ) ) { return false; }
-        
+        if ( ( randKey in o ) && ( randKey in p ) ) {
+            return true;
         }
 
-        return true;
+        mark( o );
+        mark( p );
 
+        for ( prop in p ) {
+            if ( !p.hasOwnProperty( prop ) || prop === randKey ) { continue; }
+
+            if ( !( prop in o ) || !match( o[prop], p[prop], strict ) ) {
+                return match_objects_teardown( o, p, false );
+            }
+        }
+
+        return match_objects_teardown( o, p, true );
     }
 
     // o:object, p:pattern
@@ -205,14 +247,14 @@
     function query( q, limit, offset ) {
 
         var i, _l, res,
-        
+
             strict  = true,
             reverse = false;
 
         if ( this.length === 0 || arguments.length === 0 ) {
-        
+
             return [];
-        
+
         }
 
         if ( typeof q === 'object' && q != null
@@ -228,9 +270,9 @@
         }
 
         if ( isNaN( limit ) ) {
-            
+
             limit = Infinity;
-        
+
         }
 
         offset = offset || 0;
@@ -240,7 +282,7 @@
             return this.filter(function( o ) {
 
                 return match( o, q, strict ) === !reverse;
-            
+
             }).slice( offset, offset + limit );
 
         }
