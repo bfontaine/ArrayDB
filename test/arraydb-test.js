@@ -137,6 +137,23 @@ describe( 'ArrayDB objects', function() {
 
         });
 
+        // #1
+        it( 'should handle simple circular references', function() {
+
+            var o = { foo: 42 },
+                q = { foo: 42 },
+                a;
+
+            o.bar = o;
+            q.bar = q;
+
+            a = new ArrayDB( o, { foo: 42 }, { foo: 43 } );
+
+            expect(a.query({ query: q }).length ).to.equal( 1 );
+        });
+
+        // TODO add more complex circular references
+
         describe( 'in strict mode', function() {
 
             it( 'should match only elements of the same type', function() {
