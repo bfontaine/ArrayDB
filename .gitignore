@@ -2,3 +2,5 @@
 .*.swp
 .*.swo
 /src-cov
+/env
+node_modules
