@@ -152,7 +152,51 @@ describe( 'ArrayDB objects', function() {
             expect(a.query({ query: q }).length ).to.equal( 1 );
         });
 
-        // TODO add more complex circular references
+        it( 'should handle deep circular references', function() {
+
+            var o = { foo: 42 },
+                q = { foo: 42 },
+                a;
+
+            o.bar = { foo: 42, bar: o };
+            q.bar = q;
+
+            a = new ArrayDB( o, { foo: 42 }, { foo: 43 } );
+
+            expect(a.query({ query: q }).length ).to.equal( 1 );
+        });
+
+        it( 'should not match a circular-referenced query '
+          + 'with a non-circular-referenced object', function() {
+
+              var circ   = { foo: 42 },
+                  normal = { foo: 42, bar: { foo: 42, bar: { foo: 42 } } },
+                  a;
+
+              circ.bar = circ;
+
+              a = new ArrayDB( normal, { foo: 56 }, null );
+
+              // as a pattern, `circ` doesn’t match `normal`
+              expect(a.query({ query: circ }).length ).to.equal( 0 );
+
+        });
+
+        it( 'should be able to match a non-circular-referenced query '
+          + 'with a circular-referenced object', function() {
+
+              var circ   = { foo: 42 },
+                  normal = { foo: 42, bar: { foo: 42, bar: { foo: 42 } } },
+                  a;
+
+              circ.bar = circ;
+
+              a = new ArrayDB( circ, { foo: 56 }, null );
+
+              // as a pattern, `normal` matches `circ`
+              expect(a.query({ query: normal }).length ).to.equal( 1 );
+
+        });
 
         describe( 'in strict mode', function() {
 
